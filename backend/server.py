@@ -115,7 +115,7 @@ async def chat(request: ChatRequest):
             api_key=EMERGENT_LLM_KEY,
             session_id=str(uuid.uuid4()),
             system_message=system_msg
-        ).with_model("openai", "gpt-5.4")
+        ).with_model("openai", "gpt-4.1-mini")
 
         response = await chat_instance.send_message(UserMessage(text=request.message))
 
@@ -153,7 +153,7 @@ async def get_motivation(user_name: str = "Athlete", streak: int = 0):
             api_key=EMERGENT_LLM_KEY,
             session_id=f"motivation-{uuid.uuid4()}",
             system_message="You are FitAI, an elite fitness motivation coach. Generate punchy, specific motivational messages."
-        ).with_model("openai", "gpt-5.4")
+        ).with_model("openai", "gpt-4.1-mini")
 
         streak_context = f"a {streak}-day" if streak > 0 else "a new"
         prompt = (
@@ -162,7 +162,7 @@ async def get_motivation(user_name: str = "Athlete", streak: int = 0):
         )
         response = await chat_instance.send_message(UserMessage(text=prompt))
         return {"message": response}
-ii
+
     except Exception:
         return {"message": random.choice(MOTIVATION_FALLBACKS)}
 

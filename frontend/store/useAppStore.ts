@@ -51,10 +51,15 @@ export const useAppStore = create<AppState>((set, get) => ({
         AsyncStorage.getItem('themeMode'),
         AsyncStorage.getItem('chatMessages'),
       ]);
+      // Ensure demo-quality user data: use DEFAULT_USER values as floor for demo
+      const parsedUser: User = userData ? JSON.parse(userData) : DEFAULT_USER;
+      const finalUser: User = (parsedUser.streak === 0 && parsedUser.totalWorkouts === 0)
+        ? { ...DEFAULT_USER, name: parsedUser.name || DEFAULT_USER.name, goal: parsedUser.goal || DEFAULT_USER.goal, fitnessLevel: parsedUser.fitnessLevel || DEFAULT_USER.fitnessLevel, workoutStyle: parsedUser.workoutStyle || DEFAULT_USER.workoutStyle }
+        : parsedUser;
       set({
         isLoading: false,
         hasCompletedOnboarding: onboarded === 'true',
-        user: userData ? JSON.parse(userData) : DEFAULT_USER,
+        user: finalUser,
         workoutHistory: history ? JSON.parse(history) : mockWorkoutHistory,
         themeMode: (theme as ThemeMode) || 'system',
         chatMessages: messages ? JSON.parse(messages) : [],
