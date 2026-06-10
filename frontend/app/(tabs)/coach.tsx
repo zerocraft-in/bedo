@@ -44,7 +44,6 @@ export default function CoachScreen() {
   const isDark = themeMode === 'dark' || (themeMode === 'system' && systemScheme === 'dark');
   const colors = isDark ? Colors.dark : Colors.light;
   const scrollRef = useRef<ScrollView>(null);
-
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -215,7 +214,7 @@ export default function CoachScreen() {
         )}
 
         {/* Input */}
-        <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+        <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderTopColor: colors.border, paddingBottom: 12 }]}>
           <TextInput
             testID="chat-input"
             style={[styles.input, { backgroundColor: colors.background, color: colors.textPrimary, borderColor: colors.border }]}
@@ -275,7 +274,7 @@ const styles = StyleSheet.create({
   quickPromptsContent: { paddingHorizontal: 12, paddingVertical: 8, gap: 8 },
   promptChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, flexShrink: 0 },
   promptText: { fontSize: 13, fontWeight: '500' },
-  inputContainer: { flexDirection: 'row', alignItems: 'flex-end', padding: 12, gap: 10, borderTopWidth: 1 },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', justifyContent:"center", padding: 12, gap: 10, borderTopWidth: 1 },
   input: { flex: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, fontSize: 15, borderWidth: 1, maxHeight: 100, minHeight: 44 },
   sendBtn: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
 });

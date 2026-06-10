@@ -158,7 +158,7 @@ export default function Onboarding() {
     <View style={styles.container}>
       <ImageBackground source={{ uri: current.image }} style={styles.hero}>
         <LinearGradient
-          colors={['rgba(15,23,42,0.3)', 'rgba(15,23,42,0.85)', 'rgba(15,23,42,1)']}
+          colors={['rgba(0, 0, 0, 0.3)', 'rgba(2, 2, 2, 0.85)', 'rgb(0, 0, 0)']}
           style={styles.gradient}
         />
         <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -166,7 +166,7 @@ export default function Onboarding() {
           <View style={styles.header}>
             <View style={styles.logoRow}>
               <View style={styles.logoMark} />
-              <Text style={styles.logoText}>FitAI</Text>
+              <Text style={styles.logoText}>BeDo</Text>
             </View>
             {/* Step indicators */}
             <View style={styles.stepDots}>

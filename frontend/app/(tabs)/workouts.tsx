@@ -12,6 +12,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { Colors } from '../../utils/theme';
 import { workoutPlans } from '../../data/mockData';
 import { WorkoutCategory, WorkoutPlan } from '../../types';
+import { useTabBarPadding } from '@/src/hooks/useTapBarPadding';
 
 const CATEGORIES: { key: WorkoutCategory | 'all'; label: string; emoji: string }[] = [
   { key: 'all', label: 'All', emoji: '🏆' },
@@ -116,7 +117,7 @@ export default function WorkoutsScreen() {
   const isDark = themeMode === 'dark' || (themeMode === 'system' && systemScheme === 'dark');
   const colors = isDark ? Colors.dark : Colors.light;
   const insets = useSafeAreaInsets();
-
+const tabBarPadding = useTabBarPadding();
   const [selectedCategory, setSelectedCategory] = useState<WorkoutCategory | 'all'>('all');
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutPlan | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -189,7 +190,7 @@ export default function WorkoutsScreen() {
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: tabBarPadding }]}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity

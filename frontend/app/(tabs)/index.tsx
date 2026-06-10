@@ -14,6 +14,7 @@ import { Colors } from '../../utils/theme';
 import ProgressRing from '../../components/ProgressRing';
 import WeeklyChart from '../../components/WeeklyChart';
 import { getLast7DaysStats, workoutPlans, motivationalMessages } from '../../data/mockData';
+import { useTabBarPadding } from '@/src/hooks/useTapBarPadding';
 
 export default function HomeScreen() {
   const { user, workoutHistory, themeMode } = useAppStore();
@@ -35,7 +36,7 @@ export default function HomeScreen() {
   const weekWorkouts = weekStats.filter(s => s.hasWorkout).length;
   const weekProgress = Math.min(weekWorkouts / user.workoutsGoal, 1);
   const activeMinutes = weekStats.reduce((sum, s) => sum + s.minutes, 0);
-
+  const tabBarPadding = useTabBarPadding();
   const getGreeting = () => {
     const h = new Date().getHours();
     if (h < 12) return 'Good Morning';
@@ -92,7 +93,7 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent,]}
       >
         {/* Progress Rings */}
         <View style={[styles.ringsCard, { backgroundColor: colors.surface }]}>
@@ -168,7 +169,7 @@ export default function HomeScreen() {
                 <Ionicons name="sparkles" size={18} color="#fff" />
               </View>
               <View>
-                <Text style={[styles.coachName, { color: colors.primary }]}>FitAI Coach</Text>
+                <Text style={[styles.coachName, { color: colors.primary }]}>BeDo Coach</Text>
                 <View style={styles.onlineRow}>
                   <View style={styles.onlineDot} />
                   <Text style={[styles.onlineText, { color: colors.textSecondary }]}>Online</Text>
@@ -241,7 +242,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Floating CTA */}
-      <View style={[styles.floatingCta, { backgroundColor: colors.background }]}>
+      <View style={[styles.floatingCta, { backgroundColor: colors.background }, { paddingBottom: tabBarPadding }]}>
         <TouchableOpacity
           testID="start-workout-btn"
           style={styles.startBtn}
