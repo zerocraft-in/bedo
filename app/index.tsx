@@ -1,4 +1,4 @@
-// /(tabs)/index.tsx
+// /index.tsx
 
 import { BellIcon } from "@/assets/icons";
 import StoryStrip from "@/components/StoryStrip";
@@ -132,7 +132,7 @@ export default function HomeScreen() {
             </View>
             {/* Notification Button */}
             <TouchableOpacity
-              onPress={() => router.push("/(auth)/onboarding/index")}
+              onPress={() => router.push("/(auth)/index")}
               className="w-14 h-14 rounded-3xl border border-accent items-center justify-center overflow-hidden"
             >
               <BellIcon className="w-6 h-6 text-secondary" />
