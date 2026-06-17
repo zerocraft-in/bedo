@@ -67,7 +67,7 @@ export default function WorkoutsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <SafeAreaView className="flex-1">
+      <SafeAreaView edges={["top", "left", "right"]}  style={{flex:1}} >
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
 
           {/* Header */}

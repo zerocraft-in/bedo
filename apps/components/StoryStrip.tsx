@@ -9,7 +9,9 @@ import {
 import { router } from "expo-router";
 import { STORY_DATA, StoryUser } from "./StoryViewer";
 
-// ── Gradient ring using layered Views ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Story Ring
+// ─────────────────────────────────────────────────────────────
 function StoryRing({
   seen,
   children,
@@ -20,21 +22,23 @@ function StoryRing({
   if (seen) {
     return (
       <View
-        className="rounded-full p-[2.5px]"
-        style={{ backgroundColor: "#3A3A3C" }}
+        className="rounded-full"
+        style={{
+          padding: 3,
+          backgroundColor: "#3A3A3C",
+        }}
       >
         {children}
       </View>
     );
   }
-  // Simulate gradient ring with two nested views
+
   return (
     <View
-      className="rounded-full p-[2.5px]"
+      className="rounded-full"
       style={{
-        // approximate Instagram gradient: pink → orange → yellow
+        padding: 3,
         backgroundColor: "#E1306C",
-        // layered glow
         shadowColor: "#E1306C",
         shadowOpacity: 0.6,
         shadowRadius: 6,
@@ -43,12 +47,18 @@ function StoryRing({
       }}
     >
       <View
-        className="rounded-full p-[1.5px]"
-        style={{ backgroundColor: "#F77737" }}
+        className="rounded-full"
+        style={{
+          padding: 2,
+          backgroundColor: "#F77737",
+        }}
       >
         <View
-          className="rounded-full p-[1px]"
-          style={{ backgroundColor: "#000" }}
+          className="rounded-full"
+          style={{
+            padding: 1,
+            backgroundColor: "#000",
+          }}
         >
           {children}
         </View>
@@ -57,36 +67,31 @@ function StoryRing({
   );
 }
 
-// ── Your Story (create button) ────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Create Story Button
+// ─────────────────────────────────────────────────────────────
 function CreateStoryButton() {
   return (
     <TouchableOpacity
       activeOpacity={0.95}
       className="items-center mr-4"
-      style={{ width: 70 }}
-      onPress={() => {
-        // In a real app, open camera here
-      }}
+      style={{ width: 80 }}
+      onPress={() => {}}
     >
       <View className="relative">
-        <View
-          className="w-20 h-20 rounded-full items-center bg-muted justify-center"
- 
-        >
-          <Text style={{ fontSize: 28 }}>👤</Text>
+        <View className="w-20 h-20 rounded-full bg-zinc-800 items-center justify-center">
+          <Text className="text-4xl">👤</Text>
         </View>
-        {/* Plus badge */}
-        <View
-          className="absolute bottom-0 right-0 w-6 h-6 bg-blue-500 rounded-full items-center justify-center border-2 border-accent"
-      
-        >
-          <Text className="text-foreground font-bold" style={{ fontSize: 14, lineHeight: 16 }}>+</Text>
+
+        <View className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-blue-500 items-center justify-center border-2 border-black">
+          <Text className="text-white font-bold text-sm">+</Text>
         </View>
       </View>
+
       <Text
-        className="text-primary  text-xs mt-1.5 text-center"
         numberOfLines={1}
-        style={{ width: 64 }}
+        className="text-white text-xs mt-2 text-center"
+        style={{ width: 70 }}
       >
         Your Story
       </Text>
@@ -94,7 +99,9 @@ function CreateStoryButton() {
   );
 }
 
-// ── Single Story Avatar ───────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Story Avatar
+// ─────────────────────────────────────────────────────────────
 function StoryAvatar({
   user,
   seen,
@@ -107,25 +114,32 @@ function StoryAvatar({
   return (
     <Pressable
       onPress={onPress}
-      className="items-center mr-6"
-      style={{ width: 70 }}
+      className="items-center mr-4"
+      style={{ width: 80 }}
     >
       {({ pressed }) => (
         <>
           <View style={{ opacity: pressed ? 0.7 : 1 }}>
             <StoryRing seen={seen}>
               <View
-                className="w-17.5 h-17.5 rounded-full items-center justify-center"
-                style={{ backgroundColor: user.avatarBg }}
+                className="rounded-full items-center justify-center"
+                style={{
+                  width: 70,
+                  height: 70,
+                  backgroundColor: user.avatarBg,
+                }}
               >
-                <Text style={{ fontSize: 26 }}>{user.avatarEmoji}</Text>
+                <Text style={{ fontSize: 28 }}>
+                  {user.avatarEmoji}
+                </Text>
               </View>
             </StoryRing>
           </View>
+
           <Text
-            className="text-primary text-xs mt-1.5 text-center"
             numberOfLines={1}
-            style={{ width: 64 }}
+            className="text-white text-xs mt-2 text-center"
+            style={{ width: 70 }}
           >
             {user.username}
           </Text>
@@ -135,35 +149,45 @@ function StoryAvatar({
   );
 }
 
-// ── Story Strip ───────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Story Strip
+// ─────────────────────────────────────────────────────────────
 export default function StoryStrip() {
-  // Track seen stories per session (in real app use persistent state)
   const [seen, setSeen] = React.useState<Record<string, boolean>>({});
 
   const handlePress = (userId: string) => {
-    setSeen((prev) => ({ ...prev, [userId]: true }));
-    router.push({ pathname: "/story", params: { userId } });
+    setSeen((prev) => ({
+      ...prev,
+      [userId]: true,
+    }));
+
+    router.push({
+      pathname: "/story",
+      params: { userId },
+    });
   };
 
-  // Skip "you" from the regular list since it has a special create button
-  const others = STORY_DATA.filter((u) => u.id !== "you");
+  const others = STORY_DATA.filter(
+    (user) => user.id !== "you"
+  );
 
   return (
     <View className="mb-5">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 4 }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingVertical: 4,
+        }}
       >
-        {/* Create story */}
         <CreateStoryButton />
 
-        {/* Other users */}
         {others.map((user) => (
           <StoryAvatar
             key={user.id}
             user={user}
-            seen={!!seen[user.id]}
+            seen={Boolean(seen[user.id])}
             onPress={() => handlePress(user.id)}
           />
         ))}

@@ -1,12 +1,19 @@
 // /(tabs)/profile.tsx
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 import { router } from "expo-router";
 import {
   BellIcon,
   ChevronLeftIcon,
+  GridIcon,
   ImageIcon,
   MenuIcon,
   SettingsIcon,
@@ -34,25 +41,47 @@ const notifications = [
 ];
 
 export default function NotificationScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+
+    try {
+      // Refresh API calls here
+      // await fetchStories();
+      // await fetchWorkouts();
+      // await fetchProfile();
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    } catch (error) {
+      console.log("Refresh error:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   return (
     <View className="flex-1 bg-background ">
-      <SafeAreaView className="flex-1">
+      <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1 }}>
         {/* Header */}
-        <View className="flex-row items-center px-5 py-4 ">
+        <View className="flex-row items-center ">
           <View className="flex-1 justify-between items-center flex-row">
-            {" "}
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="w-14 h-14  mr-4 rounded-3xl border border-accent items-center justify-center overflow-hidden"
-            >
-              <ChevronLeftIcon className="w-6 h-6 text-secondary" />
-            </TouchableOpacity>
-            <Text className="text-primary text-2xl font-bold">Profile</Text>
+            <View className="flex-row flex items-center">
+              <TouchableOpacity
+                onPress={() => router.back()}
+                className="w-14 h-14 flex items-center justify-center"
+              >
+                <ChevronLeftIcon className="w-6 h-6 text-foreground" />
+              </TouchableOpacity>
+              <Text className="text-foreground text-xl font-bold">
+                Profile
+              </Text>
+            </View>
             <TouchableOpacity
               onPress={() => router.navigate("/settings")}
-              className="w-14 h-14  rounded-3xl border border-accent items-center justify-center overflow-hidden"
+              className="w-14 h-14 items-center justify-center overflow-hidden"
             >
-              <SettingsIcon className="w-6 h-6 text-secondary" />
+              <SettingsIcon className="w-6 h-6 text-foreground" />
             </TouchableOpacity>
           </View>
         </View>
@@ -60,9 +89,18 @@ export default function NotificationScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingVertical: 20 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#fafafa"]}
+              tintColor="#fafafa"
+              progressBackgroundColor="#000"
+              progressViewOffset={20}
+            />
+          }
         >
           <View className="flex-1 gap-4 items-center flex-row pb-5 px-5">
-            {" "}
             <View className="relative">
               <TouchableOpacity
                 onPress={() => router.back()}
@@ -116,7 +154,7 @@ export default function NotificationScreen() {
           <View className="flex-row w-full gap-2.5 pb-5 px-5">
             <TouchableOpacity
               className="flex-1 py-2.5 items-center justify-center rounded-xl bg-accent"
-              onPress={() => router.push("/settings")}
+              onPress={() => router.push("/edit-profile")}
             >
               <Text className="text-primary text-lg font-semibold">
                 Edit Profile
@@ -125,7 +163,7 @@ export default function NotificationScreen() {
 
             <TouchableOpacity
               className="flex-1 py-2.5 items-center justify-center rounded-xl bg-accent"
-              onPress={() => {}}
+              onPress={() => router.push("/share-profile")}
             >
               <Text className="text-primary text-lg font-semibold">
                 Share Profile
@@ -144,7 +182,7 @@ export default function NotificationScreen() {
               className="flex-1 py-2.5 items-center justify-center rounded-xl"
               onPress={() => router.push("/settings")}
             >
-              <ImageIcon className="w-6 h-6 text-secondary" />
+              <GridIcon className="w-6 h-6 text-secondary" />
             </TouchableOpacity>
             <TouchableOpacity
               className="flex-1 py-2.5 items-center justify-center rounded-xl"

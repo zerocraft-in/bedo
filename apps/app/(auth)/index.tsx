@@ -25,7 +25,7 @@ export default function OnboardingScreen() {
       <StatusBar barStyle="light-content" />
 
       <LinearGradient
-        colors={["#262626", "#0a0a0a", "#262626", "#0a0a0a"]}
+        colors={["#0a0a0a","#0a0a0a", "#0a0a0a", "#0a0a0a"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         className="absolute inset-0"

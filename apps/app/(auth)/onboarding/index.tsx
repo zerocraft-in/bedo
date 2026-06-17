@@ -26,12 +26,12 @@ export default function OnboardingScreen() {
     <View className="flex-1">
       <StatusBar barStyle="light-content" />
 
-      <LinearGradient
+      {/* <LinearGradient
         colors={["#180707", "#713f12", "#422006", "#180707"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         className="absolute inset-0"
-      />
+      /> */}
 
       <BackgroundGrid />
 

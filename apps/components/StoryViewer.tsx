@@ -260,12 +260,10 @@ export default function StoryViewer() {
         style={{ transform: [{ translateY: panY }] }}
         {...panResponder.panHandlers}
       >
-        {/* Background slide */}
         <Animated.View className="flex-1" style={{ opacity: fadeAnim }}>
           <SlideBackground slide={slide} />
         </Animated.View>
 
-        {/* UI Overlay */}
         <View className="absolute inset-0">
           <SafeAreaView className="flex-1">
             {/* Progress bars */}
@@ -282,7 +280,6 @@ export default function StoryViewer() {
               ))}
             </View>
 
-            {/* Header */}
             <View className="flex-row items-center px-4 mb-4">
               <View
                 className="w-9 h-9 rounded-full items-center justify-center mr-3 border-2 border-white"
