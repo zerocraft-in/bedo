@@ -1,0 +1,92 @@
+enum AccountVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+  PENDING_VERIFICATION
+}
+
+enum WeightUnit {
+  KG
+  LB
+}
+
+enum HeightUnit {
+  CM
+  FT_IN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ActivityLevel {
+  SEDENTARY
+  LIGHTLY_ACTIVE
+  MODERATELY_ACTIVE
+  VERY_ACTIVE
+  EXTRA_ACTIVE
+}
+
+enum FitnessGoal {
+  LOSE_WEIGHT
+  GAIN_WEIGHT
+  BUILD_MUSCLE
+  STAY_FIT
+  IMPROVE_ENDURANCE
+}
+
+enum WorkoutPreference {
+  HOME
+  GYM
+  OUTDOOR
+  HYBRID
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  APPLE
+}
+
+enum SessionStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum OtpPurpose {
+  LOGIN
+  REGISTRATION
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+  TWO_FACTOR
+}
+
+enum DeviceType {
+  IOS
+  ANDROID
+  WEB
+  DESKTOP
+  UNKNOWN
+}
+
+enum TwoFactorMethod {
+  TOTP
+  EMAIL_OTP
+  SMS
+  RECOVERY_CODE
+}

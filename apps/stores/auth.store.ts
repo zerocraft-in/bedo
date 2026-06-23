@@ -1,24 +1,22 @@
-// lib/stores/auth.store.ts
-
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface User {
   id: string;
-  name: string;
   email: string;
   onboardingComplete: boolean;
 }
 
 export interface Session {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   expiresAt: number;
   user: User;
 }
 
 interface AuthState {
   session: Session | null;
-  loading: boolean;
+  isLoading: boolean;
 
   restoreSession: () => Promise<void>;
 
@@ -29,77 +27,108 @@ interface AuthState {
   completeOnboarding: () => Promise<void>;
 }
 
-const SESSION_KEY = "@fitness_app_session";
+const STORAGE_KEY =
+  "@fitness_app_session";
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  session: null,
-  loading: true,
+export const useAuthStore =
+  create<AuthState>((set, get) => ({
+    session: null,
 
-  restoreSession: async () => {
-    try {
-      const raw = await AsyncStorage.getItem(SESSION_KEY);
+    isLoading: true,
 
-      if (!raw) {
-        set({ loading: false });
-        return;
+    restoreSession: async () => {
+      try {
+        const raw =
+          await AsyncStorage.getItem(
+            STORAGE_KEY
+          );
+
+        if (!raw) {
+          set({
+            isLoading: false,
+          });
+
+          return;
+        }
+
+        const session =
+          JSON.parse(raw);
+
+        if (
+          session.expiresAt <
+          Date.now()
+        ) {
+          await AsyncStorage.removeItem(
+            STORAGE_KEY
+          );
+
+          set({
+            session: null,
+            isLoading: false,
+          });
+
+          return;
+        }
+
+        set({
+          session,
+          isLoading: false,
+        });
+      } catch {
+        set({
+          isLoading: false,
+        });
       }
+    },
 
-      const session: Session = JSON.parse(raw);
-
-      if (session.expiresAt < Date.now()) {
-        await AsyncStorage.removeItem(SESSION_KEY);
-        set({ session: null, loading: false });
-        return;
-      }
+    login: async (
+      session
+    ) => {
+      await AsyncStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(session)
+      );
 
       set({
         session,
-        loading: false,
       });
-    } catch {
+    },
+
+    logout: async () => {
+      await AsyncStorage.removeItem(
+        STORAGE_KEY
+      );
+
       set({
-        loading: false,
+        session: null,
       });
-    }
-  },
+    },
 
-  login: async (session) => {
-    await AsyncStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify(session)
-    );
+    completeOnboarding:
+      async () => {
+        const current =
+          get().session;
 
-    set({ session });
-  },
+        if (!current) return;
 
-  logout: async () => {
-    await AsyncStorage.removeItem(SESSION_KEY);
+        const updated = {
+          ...current,
 
-    set({
-      session: null,
-    });
-  },
+          user: {
+            ...current.user,
 
-  completeOnboarding: async () => {
-    const current = get().session;
+            onboardingComplete:
+              true,
+          },
+        };
 
-    if (!current) return;
+        await AsyncStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(updated)
+        );
 
-    const updated = {
-      ...current,
-      user: {
-        ...current.user,
-        onboardingComplete: true,
+        set({
+          session: updated,
+        });
       },
-    };
-
-    await AsyncStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify(updated)
-    );
-
-    set({
-      session: updated,
-    });
-  },
-}));
+  }));

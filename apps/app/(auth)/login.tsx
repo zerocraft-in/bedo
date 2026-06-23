@@ -111,7 +111,7 @@ export default function LoginScreen() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <View style={{ flex: 1, backgroundColor: "#0a0a0a" }}>
+    <View className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />
       <LinearGradient
         colors={["#0a0a0a", "#0a0a0a"]}
@@ -142,7 +142,7 @@ export default function LoginScreen() {
                     }
                   : () => router.back()
               }
-              className="w-14 h-14 mb-5 rounded-3xl bg-accent border border-accent items-center justify-center overflow-hidden"
+              className="w-14 h-14 mb-5 rounded-3xl  border border-accent items-center justify-center overflow-hidden"
             >
               <ChevronLeftIcon className="w-6 h-6 text-secondary" />
             </TouchableOpacity>
@@ -153,12 +153,6 @@ export default function LoginScreen() {
                   <Text style={styles.heading}>Welcome back</Text>
                   <Text style={styles.subheading}>
                     Sign in to continue your journey.
-                  </Text>
-                </View>
-                {/* Dev hint banner */}
-                <View style={styles.devBanner}>
-                  <Text style={styles.devText}>
-                    🧪 Demo: Use any email — OTP will appear after sending
                   </Text>
                 </View>
 
@@ -196,7 +190,7 @@ export default function LoginScreen() {
                   )}
                 >
                   <Text className="text-foreground font-bold text-lg">
-                    {loading ? "Sending code…" : "Send Code"}
+                    {loading ? "Sending code…" : "Continue"}
                   </Text>
                 </TouchableOpacity>
 
@@ -219,15 +213,15 @@ export default function LoginScreen() {
               </>
             ) : (
               <>
-              <View>
-                <Text style={styles.heading}>Check your email</Text>
-                <Text style={styles.subheading}>
-                  We sent a 6-digit code to{"\n"}
-                  <Text style={{ color: "#ca8a04", fontWeight: "600" }}>
-                    {email}
+                <View>
+                  <Text style={styles.heading}>Check your email</Text>
+                  <Text style={styles.subheading}>
+                    We sent a 6-digit code to{"\n"}
+                    <Text style={{ color: "#ca8a04", fontWeight: "600" }}>
+                      {email}
+                    </Text>
                   </Text>
-                </Text>
-</View>
+                </View>
                 {/* Dev OTP banner */}
                 {devOtp ? (
                   <View style={styles.otpBanner}>
@@ -314,6 +308,7 @@ function Divider() {
 }
 
 function SocialButtons() {
+  // Only Google Auth
   return (
     <>
       <TouchableOpacity
@@ -328,20 +323,6 @@ function SocialButtons() {
         <GoogleIcon className="w-7 h-7 text-foreground" strokeWidth={2} />
         <Text className="text-lg text-foreground font-bold">
           Continue with Google
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        className="rounded-2xl border border-accent py-5 mb-4"
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 10,
-        }}
-      >
-        <AppleIcon className="w-7 h-7 text-foreground" strokeWidth={2} />
-        <Text className="text-lg text-foreground font-bold">
-          Continue with Apple
         </Text>
       </TouchableOpacity>
     </>

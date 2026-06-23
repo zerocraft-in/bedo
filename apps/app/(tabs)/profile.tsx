@@ -154,7 +154,7 @@ export default function NotificationScreen() {
           <View className="flex-row w-full gap-2.5 pb-5 px-5">
             <TouchableOpacity
               className="flex-1 py-2.5 items-center justify-center rounded-xl bg-accent"
-              onPress={() => router.push("/edit-profile")}
+              // onPress={() => router.push("/edit-profile")}
             >
               <Text className="text-primary text-lg font-semibold">
                 Edit Profile
@@ -163,7 +163,7 @@ export default function NotificationScreen() {
 
             <TouchableOpacity
               className="flex-1 py-2.5 items-center justify-center rounded-xl bg-accent"
-              onPress={() => router.push("/share-profile")}
+              // onPress={() => router.push("/share-profile")}
             >
               <Text className="text-primary text-lg font-semibold">
                 Share Profile

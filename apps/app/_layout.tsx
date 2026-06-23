@@ -111,6 +111,7 @@ function AppNavigator() {
                 animation: "slide_from_right",
               }}
             />
+
             <Stack.Screen
               name="notification"
               options={{

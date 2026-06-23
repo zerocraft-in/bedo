@@ -1,0 +1,56 @@
+model User {
+  id String @id @default(cuid())
+
+  email         String? @unique
+  emailVerified Boolean @default(false)
+
+  phone         String? @unique
+  phoneVerified Boolean @default(false)
+
+  username String @unique
+
+  passwordHash String?
+
+  isGuest Boolean @default(false)
+
+  status     AccountStatus     @default(ACTIVE)
+  visibility AccountVisibility @default(PUBLIC)
+
+  isVerified Boolean @default(false)
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile?
+
+  identities AuthIdentity[]
+  sessions   Session[]
+  devices    Device[]
+
+  otpCodes OtpCode[]
+
+  twoFactor TwoFactorSettings?
+
+  recoveryCodes RecoveryCode[]
+
+  refreshTokens RefreshToken[]
+
+  loginAttempts LoginAttempt[]
+
+  auditLogs AuditLog[]
+
+  passwordResets PasswordResetToken[]
+
+  posts Post[]
+
+  followers Follow[] @relation("Followers")
+  following Follow[] @relation("Following")
+
+  comments Comment[]
+  likes    Like[]
+  saves    Save[]
+
+  @@map("users")
+}

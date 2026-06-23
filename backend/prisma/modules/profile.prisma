@@ -1,0 +1,50 @@
+model Profile {
+  id String @id @default(cuid())
+
+  userId String @unique
+
+  firstName String?
+  lastName  String?
+
+  displayName String?
+
+  avatarUrl String?
+  bio       String?
+
+  dateOfBirth DateTime?
+
+  gender     Gender?
+  experience ExperienceLevel?
+
+  heightValue Float?
+  heightUnit  HeightUnit @default(CM)
+
+  weightValue Float?
+  weightUnit  WeightUnit @default(KG)
+
+  onboardingCompleted   Boolean   @default(false)
+  onboardingCompletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  goals GoalSetting[]
+}
+
+model GoalSetting {
+  id String @id @default(cuid())
+
+  profileId String
+
+  goal FitnessGoal
+
+  targetWeight Float?
+
+  targetDate DateTime?
+
+  isActive Boolean @default(true)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}

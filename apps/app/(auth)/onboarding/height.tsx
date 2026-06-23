@@ -1,335 +1,343 @@
 // app/(auth)/onboarding/height.tsx
+
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StatusBar,
-  ScrollView,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Platform,
+  TextInput,
+  Alert,
+  Animated,
 } from "react-native";
-import { useState, useRef, useCallback, useEffect } from "react";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import * as Haptics from "expo-haptics";
+
 import { useOnboarding } from "@/lib/onboarding-store";
 import { ProgressBar } from "./gender";
 
 const MIN_CM = 140;
 const MAX_CM = 220;
-const ITEM_H = 48;
-const VISIBLE_ITEMS = 5;
-const SIDE_ITEMS = Math.floor(VISIBLE_ITEMS / 2); // 2
-const PICKER_H = ITEM_H * VISIBLE_ITEMS;
 const INITIAL_CM = 175;
-
-const heights = Array.from({ length: MAX_CM - MIN_CM + 1 }, (_, i) => MIN_CM + i);
-const INITIAL_IDX = heights.indexOf(INITIAL_CM);
 
 type Unit = "cm" | "ft";
 
-function cmToFtIn(cm: number): string {
-  const totalIn = Math.round(cm / 2.54);
-  const ft = Math.floor(totalIn / 12);
-  const inches = totalIn % 12;
-  return `${ft}' ${inches}"`;
+function cmToFtIn(cm: number) {
+  const totalInches = Math.round(cm / 2.54);
+  const feet = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
+
+  return `${feet}' ${inches}"`;
 }
 
-// Opacity/scale based on distance from center
-function getItemStyle(distance: number) {
-  switch (distance) {
-    case 0:
-      return { opacity: 1, fontSize: 26, fontWeight: "800" as const, color: "#ffffff" };
-    case 1:
-      return { opacity: 0.55, fontSize: 20, fontWeight: "600" as const, color: "#ffffff" };
-    case 2:
-      return { opacity: 0.2, fontSize: 17, fontWeight: "400" as const, color: "#ffffff" };
-    default:
-      return { opacity: 0, fontSize: 15, fontWeight: "400" as const, color: "#ffffff" };
-  }
+function cmToFeetInches(cm: number) {
+  const totalInches = Math.round(cm / 2.54);
+
+  return {
+    feet: Math.floor(totalInches / 12),
+    inches: totalInches % 12,
+  };
+}
+
+function ftInToCm(feet: string, inches: string) {
+  const ft = parseInt(feet) || 0;
+  const inch = parseInt(inches) || 0;
+
+  return Math.round((ft * 12 + inch) * 2.54);
 }
 
 export default function HeightScreen() {
   const { set } = useOnboarding();
+
   const [unit, setUnit] = useState<Unit>("cm");
-  const [selectedIdx, setSelectedIdx] = useState(INITIAL_IDX);
-  const selectedIdxRef = useRef(INITIAL_IDX);
-  const lastHapticIdxRef = useRef(INITIAL_IDX);
-  const scrollRef = useRef<ScrollView>(null);
-  const isScrollingRef = useRef(false);
 
-  // Scroll to initial position on mount
+  const [heightCm, setHeightCm] = useState(INITIAL_CM);
+  const [cmInput, setCmInput] = useState(INITIAL_CM.toString());
+
+  const initial = cmToFeetInches(INITIAL_CM);
+
+  const [feet, setFeet] = useState(initial.feet.toString());
+  const [inch, setInch] = useState(initial.inches.toString());
+
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
   useEffect(() => {
-    const offset = INITIAL_IDX * ITEM_H;
-    setTimeout(() => {
-      scrollRef.current?.scrollTo({ y: offset, animated: false });
-    }, 50);
-  }, []);
+    const converted = cmToFeetInches(heightCm);
 
-  function displayValue(cm: number) {
-    return unit === "cm" ? `${cm} cm` : cmToFtIn(cm);
-  }
+    setFeet(converted.feet.toString());
+    setInch(converted.inches.toString());
+    setCmInput(heightCm.toString());
+  }, [heightCm]);
 
-  const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = e.nativeEvent.contentOffset.y;
-    const idx = Math.round(offsetY / ITEM_H);
-    const clamped = Math.max(0, Math.min(idx, heights.length - 1));
+  const animateError = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.96,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
 
-    if (clamped !== selectedIdxRef.current) {
-      selectedIdxRef.current = clamped;
-      setSelectedIdx(clamped);
+  const updateCm = (value: string) => {
+    setCmInput(value);
 
-      // Haptic tick on each new item
-      if (clamped !== lastHapticIdxRef.current) {
-        lastHapticIdxRef.current = clamped;
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
+    const num = parseInt(value);
+
+    if (!isNaN(num) && num >= MIN_CM && num <= MAX_CM) {
+      setHeightCm(num);
     }
-  }, []);
+  };
 
-  const onMomentumScrollEnd = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = e.nativeEvent.contentOffset.y;
-    const idx = Math.round(offsetY / ITEM_H);
-    const clamped = Math.max(0, Math.min(idx, heights.length - 1));
-    // Snap precisely
-    scrollRef.current?.scrollTo({ y: clamped * ITEM_H, animated: true });
-    selectedIdxRef.current = clamped;
-    setSelectedIdx(clamped);
-    isScrollingRef.current = false;
-  }, []);
+  const updateFeet = (value: string) => {
+    setFeet(value);
 
-  const onScrollBeginDrag = useCallback(() => {
-    isScrollingRef.current = true;
-  }, []);
+    const cm = ftInToCm(value, inch);
 
-  function handleContinue() {
-    set({ height: heights[selectedIdx] });
+    if (cm >= MIN_CM && cm <= MAX_CM) {
+      setHeightCm(cm);
+    }
+  };
+
+  const updateInch = (value: string) => {
+    setInch(value);
+
+    const cm = ftInToCm(feet, value);
+
+    if (cm >= MIN_CM && cm <= MAX_CM) {
+      setHeightCm(cm);
+    }
+  };
+
+  const validateCmInput = () => {
+    const num = parseInt(cmInput);
+
+    if (!cmInput || isNaN(num) || num < MIN_CM || num > MAX_CM) {
+      setCmInput(heightCm.toString());
+    }
+  };
+
+  const handleContinue = () => {
+    if (heightCm < MIN_CM || heightCm > MAX_CM) {
+      animateError();
+
+      Alert.alert(
+        "Invalid Height",
+        `Please enter a height between ${MIN_CM} and ${MAX_CM} cm`,
+      );
+
+      return;
+    }
+
+    set({
+      height: heightCm,
+    });
+
     router.push("/(auth)/onboarding/weight");
-  }
-
-  const handleUnitChange = useCallback(
-    (newUnit: Unit) => {
-      setUnit(newUnit);
-    },
-    []
-  );
+  };
 
   return (
-    <View style={S.root}>
+    <View className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={S.safe}>
+
+      <SafeAreaView
+        className="flex-1 px-6"
+        style={{
+          flex: 1,
+          paddingHorizontal: 24,
+        }}
+      >
         <ProgressBar step={2} total={5} />
 
-        <Text style={S.heading}>Your Height</Text>
-        <Text style={S.sub}>Scroll to set your height.</Text>
+        {/* Header */}
+        <View className="mt-4 mb-10">
+          <Text className="text-foreground text-4xl font-bold">
+            What's your height?
+          </Text>
 
-        <View style={S.centerArea}>
-          <View style={S.pickerOuter}>
-            {/* Gold selection band — behind scroll content */}
-            <View style={S.selectionBar} pointerEvents="none" />
+          <Text className="text-muted-foreground mt-3 text-base">
+            We'll personalize your fitness experience.
+          </Text>
+        </View>
 
-            <ScrollView
-              ref={scrollRef}
-              showsVerticalScrollIndicator={false}
-              snapToInterval={ITEM_H}
-              decelerationRate={Platform.OS === "ios" ? "fast" : 0.9}
-              scrollEventThrottle={16}
-              onScroll={onScroll}
-              onMomentumScrollEnd={onMomentumScrollEnd}
-              onScrollBeginDrag={onScrollBeginDrag}
-              contentContainerStyle={{
-                paddingTop: ITEM_H * SIDE_ITEMS,
-                paddingBottom: ITEM_H * SIDE_ITEMS,
-              }}
-              bounces={false}
-              overScrollMode="never"
-            >
-              {heights.map((cm, idx) => {
-                const distance = Math.abs(idx - selectedIdx);
-                const style = getItemStyle(distance);
-                return (
-                  <View key={cm} style={S.itemRow}>
-                    <Text
-                      style={[
-                        S.itemText,
-                        {
-                          opacity: style.opacity,
-                          fontSize: style.fontSize,
-                          fontWeight: style.fontWeight,
-                          color: style.color,
-                        },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {displayValue(cm)}
-                    </Text>
-                  </View>
-                );
-              })}
-            </ScrollView>
+        <View className="flex-1">
+          {/* Unit Switch */}
+          <View className="items-center mb-12">
+            <View className="flex-row bg-card rounded-3xl p-1">
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => setUnit("cm")}
+                className={`px-8 py-3 rounded-2xl ${
+                  unit === "cm" ? "bg-primary" : "bg-transparent"
+                }`}
+              >
+                <Text
+                  className={`font-semibold ${
+                    unit === "cm"
+                      ? "text-primary-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  CM
+                </Text>
+              </TouchableOpacity>
 
-            {/* Fade masks */}
-            <LinearGradient
-              colors={["#0a0a0a", "rgba(10,10,10,0.85)", "transparent"]}
-              locations={[0, 0.4, 1]}
-              style={S.fadeTop}
-              pointerEvents="none"
-            />
-            <LinearGradient
-              colors={["transparent", "rgba(10,10,10,0.85)", "#0a0a0a"]}
-              locations={[0, 0.6, 1]}
-              style={S.fadeBot}
-              pointerEvents="none"
-            />
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => setUnit("ft")}
+                className={`px-8 py-3 rounded-2xl ${
+                  unit === "ft" ? "bg-primary" : "bg-transparent"
+                }`}
+              >
+                <Text
+                  className={`font-semibold ${
+                    unit === "ft"
+                      ? "text-primary-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  FT / IN
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <Text style={S.valueLabel}>{displayValue(heights[selectedIdx])}</Text>
+          {/* Input Area */}
+          {unit === "cm" ? (
+            <View className="items-center mb-12">
+              <Text className="text-foreground text-7xl font-bold">
+                {heightCm}
+              </Text>
 
-          {/* cm / ft toggle */}
-          <View style={S.unitToggle}>
-            <TouchableOpacity
-              onPress={() => handleUnitChange("cm")}
-              style={[S.unitBtn, unit === "cm" && S.unitBtnActive]}
-              activeOpacity={0.8}
-            >
-              <Text style={[S.unitText, unit === "cm" && S.unitTextActive]}>cm</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleUnitChange("ft")}
-              style={[S.unitBtn, unit === "ft" && S.unitBtnActive]}
-              activeOpacity={0.8}
-            >
-              <Text style={[S.unitText, unit === "ft" && S.unitTextActive]}>ft / in</Text>
-            </TouchableOpacity>
+              <Text className="text-muted-foreground mt-2 mb-6">
+                centimeters
+              </Text>
+
+              <TextInput
+                value={cmInput}
+                onChangeText={updateCm}
+                onBlur={validateCmInput}
+                keyboardType="number-pad"
+                maxLength={3}
+                placeholder="175"
+                placeholderTextColor="#9CA3AF"
+                style={{
+                  height: 64,
+                  width: 180,
+                  borderRadius: 18,
+                  textAlign: "center",
+                  fontSize: 24,
+                  fontWeight: "700",
+                  color: "#FFFFFF",
+                  backgroundColor: "rgba(255,255,255,0.07)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.12)",
+                }}
+              />
+            </View>
+          ) : (
+            <View className="mb-12">
+              <View className="flex-row gap-4">
+                <View className="flex-1">
+                  <Text className="text-muted-foreground mb-2 text-sm">
+                    Feet
+                  </Text>
+
+                  <TextInput
+                    value={feet}
+                    onChangeText={updateFeet}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    placeholder="5"
+                    placeholderTextColor="#9CA3AF"
+                    style={{
+                      height: 64,
+                      borderRadius: 18,
+                      textAlign: "center",
+                      fontSize: 24,
+                      fontWeight: "700",
+                      color: "#FFFFFF",
+                      backgroundColor: "rgba(255,255,255,0.07)",
+                      borderWidth: 1,
+                      borderColor: "rgba(255,255,255,0.12)",
+                    }}
+                  />
+                </View>
+
+                <View className="flex-1">
+                  <Text className="text-muted-foreground mb-2 text-sm">
+                    Inches
+                  </Text>
+
+                  <TextInput
+                    value={inch}
+                    onChangeText={updateInch}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    placeholder="9"
+                    placeholderTextColor="#9CA3AF"
+                    style={{
+                      height: 64,
+                      borderRadius: 18,
+                      textAlign: "center",
+                      fontSize: 24,
+                      fontWeight: "700",
+                      color: "#FFFFFF",
+                      backgroundColor: "rgba(255,255,255,0.07)",
+                      borderWidth: 1,
+                      borderColor: "rgba(255,255,255,0.12)",
+                    }}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Preview Card */}
+          <View className="bg-card rounded-3xl p-6 border border-border">
+            <Text className="text-muted-foreground text-sm">
+              Selected Height
+            </Text>
+
+            <Text className="text-foreground text-4xl font-bold mt-2">
+              {heightCm} cm
+            </Text>
+
+            <Text className="text-muted-foreground mt-2 text-base">
+              {cmToFtIn(heightCm)}
+            </Text>
           </View>
         </View>
 
-        <TouchableOpacity onPress={handleContinue} style={S.cta} activeOpacity={0.85}>
-          <Text style={S.ctaText}>Continue</Text>
-        </TouchableOpacity>
+        {/* Continue Button */}
+        <Animated.View
+          style={{
+            transform: [{ scale: scaleAnim }],
+          }}
+        >
+          <TouchableOpacity
+            onPress={handleContinue}
+            activeOpacity={0.9}
+            className="
+              h-14
+              bg-yellow-600
+              rounded-2xl
+              items-center
+              justify-center
+              mb-6
+            "
+          >
+            <Text className="text-primary-foreground text-base font-bold">
+              Continue
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
       </SafeAreaView>
     </View>
   );
 }
-
-const S: Record<string, any> = {
-  root: {
-    flex: 1,
-    backgroundColor: "#0a0a0a",
-  },
-  safe: {
-    flex: 1,
-    paddingHorizontal: 24,
-  },
-  heading: {
-    color: "#fff",
-    fontSize: 30,
-    fontWeight: "800",
-    marginBottom: 6,
-    letterSpacing: -0.3,
-  },
-  sub: {
-    color: "rgba(255,255,255,0.45)",
-    fontSize: 15,
-  },
-  centerArea: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  // ── Picker ─────────────────────────────────────────────────────────
-  pickerOuter: {
-    height: PICKER_H,
-    width: 240,
-    overflow: "hidden",
-    position: "relative",
-  },
-  selectionBar: {
-    position: "absolute",
-    top: ITEM_H * SIDE_ITEMS,
-    left: 8,
-    right: 8,
-    height: ITEM_H,
-    backgroundColor: "rgba(202,138,4,0.10)",
-    borderTopWidth: 1.5,
-    borderBottomWidth: 1.5,
-    borderColor: "#ca8a04",
-    borderRadius: 12,
-    zIndex: 2,
-  },
-  itemRow: {
-    height: ITEM_H,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  itemText: {
-    textAlign: "center",
-  },
-  fadeTop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: ITEM_H * SIDE_ITEMS,
-    zIndex: 3,
-  },
-  fadeBot: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: ITEM_H * SIDE_ITEMS,
-    zIndex: 3,
-  },
-
-  // ── Value label ────────────────────────────────────────────────────
-  valueLabel: {
-    color: "rgba(255,255,255,0.35)",
-    fontSize: 13,
-    marginTop: 18,
-    letterSpacing: 0.5,
-  },
-
-  // ── Unit toggle ────────────────────────────────────────────────────
-  unitToggle: {
-    flexDirection: "row",
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  unitBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    backgroundColor: "transparent",
-  },
-  unitBtnActive: {
-    backgroundColor: "rgba(202,138,4,0.15)",
-  },
-  unitText: {
-    color: "rgba(255,255,255,0.35)",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  unitTextActive: {
-    color: "#ca8a04",
-  },
-
-  // ── CTA ────────────────────────────────────────────────────────────
-  cta: {
-    backgroundColor: "#ca8a04",
-    borderRadius: 18,
-    paddingVertical: 18,
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  ctaText: {
-    color: "#000",
-    fontWeight: "800",
-    fontSize: 17,
-  },
-};

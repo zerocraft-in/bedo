@@ -1,8 +1,31 @@
+import 'dotenv/config';
 
-import dotenv from 'dotenv';
-dotenv.config();
 import app from './app.js';
 
-app.listen(process.env.PORT || 5000, ()=>{
- console.log('Server running');
-});
+import { env } from './config/env.js';
+
+import { prisma } from './config/prisma.js';
+
+async function bootstrap() {
+  try {
+    await prisma.$connect();
+
+    console.log(
+      'Database Connected'
+    );
+
+    app.listen(
+      env.PORT,
+      () => {
+        console.log(
+          `Server running on port ${env.PORT}`
+        );
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+bootstrap();

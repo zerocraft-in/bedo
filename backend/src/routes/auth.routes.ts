@@ -1,13 +1,32 @@
-
 import { Router } from 'express';
+
+import {
+  AuthController,
+} from '../controllers/auth.controller.js';
+
+import {
+  validate,
+} from '../middleware/validation.middleware.js';
+
+import {
+  sendOtpSchema,
+  verifyOtpSchema,
+} from '../validators/auth.validator.js';
+
 const router = Router();
 
-router.post('/register', async (_req,res)=>{
-  res.json({message:'register endpoint'});
-});
+router.post(
+  '/send-otp',
+  validate(sendOtpSchema),
+  AuthController.sendOtp
+);
 
-router.post('/login', async (_req,res)=>{
-  res.json({message:'login endpoint'});
-});
+router.post(
+  '/verify-otp',
+  validate(
+    verifyOtpSchema
+  ),
+  AuthController.verifyOtp
+);
 
 export default router;

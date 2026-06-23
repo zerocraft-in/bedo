@@ -21,7 +21,7 @@ function BrandSection() {
 }
 export default function OnboardingScreen() {
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />
 
       <LinearGradient
